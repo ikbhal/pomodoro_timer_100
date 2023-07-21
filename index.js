@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const port = 3006; // Change this to the desired port number
+const port = 3001; // Change this to the desired port number
 
 // Serve static files from the "static" folder
 app.use(express.static(path.join(__dirname, 'static')));
