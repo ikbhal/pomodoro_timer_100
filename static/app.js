@@ -7,6 +7,7 @@ const app = new Vue({
     timer: null,
     pomodorosCompleted: 0,
     pomodorosBeforeLongBreak: 4,
+    isBackgroundSoundPlaying: false,
   },
   methods: {
     formatTime(timeInSeconds) {
@@ -17,8 +18,10 @@ const app = new Vue({
     toggleTimer() {
       if (this.isRunning) {
         clearInterval(this.timer);
+        this.pauseBackgroundSound();
       } else {
         this.timer = setInterval(this.updateTimer, 1000);
+        this.playBackgroundSound();
       }
       this.isRunning = !this.isRunning;
     },
@@ -33,6 +36,7 @@ const app = new Vue({
       clearInterval(this.timer);
       this.isRunning = false;
       this.timeLeft = this.getTimeForCurrentTab();
+      this.pauseBackgroundSound();
     },
     getTimeForCurrentTab() {
       switch (this.currentTab) {
@@ -42,12 +46,12 @@ const app = new Vue({
           return 15 * 60; // 15 minutes in seconds (example, adjust as needed)
         case 'shortBreak':
           return 5 * 60; // 5 minutes in seconds (example, adjust as needed)
-          // return 30;//testing only
         default:
           return 25 * 60;
       }
     },
     onTimerEnd() {
+      this.stopBackgroundSound();
       this.playNotificationSound();
       this.pomodorosCompleted++;
       if (this.pomodorosCompleted % this.pomodorosBeforeLongBreak === 0) {
@@ -57,6 +61,28 @@ const app = new Vue({
       }
       this.timeLeft = this.getTimeForCurrentTab();
       this.resetTimer();
+    },
+    playBackgroundSound() {
+      if (!this.isBackgroundSoundPlaying) {
+        this.isBackgroundSoundPlaying = true;
+        const audio = new Audio('/waves-14877.mp3');
+        audio.loop = true;
+        audio.play();
+        this.backgroundSound = audio;
+      }
+    },
+    pauseBackgroundSound() {
+      if (this.isBackgroundSoundPlaying && this.backgroundSound) {
+        this.isBackgroundSoundPlaying = false;
+        this.backgroundSound.pause();
+      }
+    },
+    stopBackgroundSound() {
+      if (this.isBackgroundSoundPlaying && this.backgroundSound) {
+        this.isBackgroundSoundPlaying = false;
+        this.backgroundSound.pause();
+        this.backgroundSound.currentTime = 0;
+      }
     },
     playNotificationSound() {
       const audio = new Audio('/clock-alarm.mp3');
