@@ -1,3 +1,69 @@
+
+// TodoList component
+const TodoList = {
+  data() {
+    return {
+      newTodo: '',
+      todos: [],
+    };
+  },
+  methods: {
+    addTodo() {
+      if (this.newTodo.trim() !== '') {
+        this.todos.push({ text: this.newTodo, checked: false });
+        this.newTodo = '';
+      }
+    },
+    toggleCheck(index) {
+      this.todos[index].checked = !this.todos[index].checked;
+    },
+    deleteTodo(index) {
+      this.todos.splice(index, 1);
+    },
+    exportJSON() {
+      const jsonData = JSON.stringify(this.todos);
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'todos.json';
+      a.click();
+    },
+    exportText() {
+      const textData = this.todos.map((todo) => `- [${todo.checked ? 'x' : ' '}] ${todo.text}`).join('\n');
+      const blob = new Blob([textData], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'todos.txt';
+      a.click();
+    },
+  },
+  template: `
+    <div>
+      <h3>Todo List</h3>
+      <input v-model="newTodo" @keyup.enter="addTodo" class="form-control mb-2" placeholder="Add a new todo...">
+      <ul class="list-group">
+        <li v-for="(todo, index) in todos" :key="index" class="list-group-item">
+          <input type="checkbox" v-model="todo.checked" @change="toggleCheck(index)">
+          <span :class="{ 'text-decoration-line-through': todo.checked }">{{ todo.text }}</span>
+          <button @click="deleteTodo(index)" class="btn btn-danger btn-sm float-right">
+            <i class="fas fa-trash-alt"></i> <!-- Font Awesome trash icon -->
+          </button>
+        </li>
+      </ul>
+      <div>
+        <button @click="exportJSON" class="btn btn-primary mt-2">
+          <i class="fas fa-download"></i> Export as JSON
+        </button>
+        <button @click="exportText" class="btn btn-primary mt-2">
+          <i class="fas fa-download"></i> Export as Text
+        </button>
+      </div>
+    </div>
+  `,
+};
+
 const app = new Vue({
   el: '#app',
   data: {
@@ -8,6 +74,10 @@ const app = new Vue({
     pomodorosCompleted: 0,
     pomodorosBeforeLongBreak: 4,
     isBackgroundSoundPlaying: false,
+  },
+  // Register the TodoList component globally
+  components: {
+    'todo-list': TodoList,
   },
   methods: {
     formatTime(timeInSeconds) {
