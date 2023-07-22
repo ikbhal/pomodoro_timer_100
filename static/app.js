@@ -7,6 +7,9 @@ const TodoList = {
       todos: [],
     };
   },
+  mounted() {
+    this.loadFromLocalStorage();
+  },
   methods: {
     addTodo() {
       if (this.newTodo.trim() !== '') {
@@ -38,21 +41,69 @@ const TodoList = {
       a.download = 'todos.txt';
       a.click();
     },
+    saveToLocalStorage() {
+      localStorage.setItem('todos', JSON.stringify(this.todos));
+      alert('Todos saved to local storage.');
+    },
+
+    importFromJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const importedTodos = JSON.parse(reader.result);
+          if (!Array.isArray(importedTodos)) {
+            throw new Error('Invalid JSON format. Please provide a valid array of todos.');
+          }
+          this.todos = importedTodos;
+          alert('Todos imported successfully.');
+        } catch (error) {
+          alert('Error importing todos. Please ensure you are using a valid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    },
+          
+    deleteAllTodos() {
+      if (confirm("Are you sure you want to delete all todos?")) {
+        this.todos = [];
+        localStorage.removeItem("todos");
+      }
+    },
+
+    loadFromLocalStorage() {
+      const storedTodos = localStorage.getItem("todos");
+      if (storedTodos) {
+        this.todos = JSON.parse(storedTodos);
+      }
+    },
+
   },
+
   template: `
     <div>
       <h3>Todo List</h3>
+      <button @click="deleteAllTodos" class="btn btn-danger">Delete All</button>
       <input v-model="newTodo" @keyup.enter="addTodo" class="form-control mb-2" placeholder="Add a new todo...">
       <ul class="list-group">
         <li v-for="(todo, index) in todos" :key="index" class="list-group-item">
           <input type="checkbox" v-model="todo.checked" @change="toggleCheck(index)">
-          <span :class="{ 'text-decoration-line-through': todo.checked }">{{ todo.text }}</span>
           <button @click="deleteTodo(index)" class="btn btn-danger btn-sm float-right">
             <i class="fas fa-trash-alt"></i> <!-- Font Awesome trash icon -->
           </button>
+          <span :class="{ 'text-decoration-line-through': todo.checked }">{{ todo.text }}</span>
         </li>
       </ul>
       <div>
+        <button @click="saveToLocalStorage" class="btn btn-primary mt-2">
+          Save
+        </button>
+        <br/>
+        <input type="file" ref="fileInput" @change="importFromJSON" style="display: none;">
+        <button @click="$refs.fileInput.click()" class="btn btn-primary mt-2">Import</button>
+        <br/>
         <button @click="exportJSON" class="btn btn-primary mt-2">
           <i class="fas fa-download"></i> Export as JSON
         </button>
