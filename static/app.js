@@ -86,6 +86,21 @@ const TodoList = {
     <div>
       <h3>Todo List</h3>
       <button @click="deleteAllTodos" class="btn btn-danger">Delete All</button>
+      
+      <button @click="saveToLocalStorage" class="btn btn-primary mt-2">
+        Save
+      </button>
+      <br/>
+      <input type="file" ref="fileInput" @change="importFromJSON" style="display: none;">
+      <button @click="$refs.fileInput.click()" class="btn btn-primary mt-2">Import</button>
+      <br/>
+      <button @click="exportJSON" class="btn btn-primary mt-2">
+        <i class="fas fa-download"></i> Export as JSON
+      </button>
+      <button @click="exportText" class="btn btn-primary mt-2">
+        <i class="fas fa-download"></i> Export as Text
+      </button>
+    </div>
       <input v-model="newTodo" @keyup.enter="addTodo" class="form-control mb-2" placeholder="Add a new todo...">
       <ul class="list-group">
         <li v-for="(todo, index) in todos" :key="index" class="list-group-item">
@@ -96,21 +111,7 @@ const TodoList = {
           <span :class="{ 'text-decoration-line-through': todo.checked }">{{ todo.text }}</span>
         </li>
       </ul>
-      <div>
-        <button @click="saveToLocalStorage" class="btn btn-primary mt-2">
-          Save
-        </button>
-        <br/>
-        <input type="file" ref="fileInput" @change="importFromJSON" style="display: none;">
-        <button @click="$refs.fileInput.click()" class="btn btn-primary mt-2">Import</button>
-        <br/>
-        <button @click="exportJSON" class="btn btn-primary mt-2">
-          <i class="fas fa-download"></i> Export as JSON
-        </button>
-        <button @click="exportText" class="btn btn-primary mt-2">
-          <i class="fas fa-download"></i> Export as Text
-        </button>
-      </div>
+     
     </div>
   `,
 };
@@ -158,6 +159,13 @@ const app = new Vue({
       this.isRunning = false;
       this.timeLeft = this.getTimeForCurrentTab();
       this.pauseBackgroundSound();
+    },
+    toggleBackground(){
+      if (this.isBackgroundSoundPlaying) {
+        this.pauseBackgroundSound();
+      } else {
+        this.playBackgroundSound();
+      }
     },
     getTimeForCurrentTab() {
       switch (this.currentTab) {
